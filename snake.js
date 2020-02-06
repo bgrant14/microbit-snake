@@ -1,26 +1,26 @@
 let difficulty: number = 500
 class snake {
-    playerLoc: number[] = []
+    path: number[] = []
     tail: game.LedSprite[] = []
     food: game.LedSprite
     tailLength: number
     foodX: number
     foodY: number
     constructor() {
-        this.playerLoc[0, 0] = Math.randomRange(0, 4)
-        this.playerLoc[0, 1] = Math.randomRange(0, 4)
-        this.playerLoc[1, 0] = this.playerLoc[0, 0] - 1
-        this.playerLoc[1, 1] = this.playerLoc[0, 1]
+        this.path[0, 0] = Math.randomRange(0, 4)
+        this.path[0, 1] = Math.randomRange(0, 4)
+        this.path[1, 0] = this.path[0, 0] - 1
+        this.path[1, 1] = this.path[0, 1]
         this.tailLength = 1
-        this.tail[0] = game.createSprite(this.playerLoc[0, 0], this.playerLoc[0, 1])
-        this.tail[1] = game.createSprite(this.playerLoc[1, 0], this.playerLoc[1, 1])
+        this.tail[0] = game.createSprite(this.path[0, 0], this.path[0, 1])
+        this.tail[1] = game.createSprite(this.path[1, 0], this.path[1, 1])
         this.newFood()
     }
     newFood() {
         this.foodX = Math.randomRange(0, 4)
         this.foodY = Math.randomRange(0, 4)
         for (let i: number = 0; i <= this.tailLength; i++) {
-            if (this.foodX == this.playerLoc[i, 0] && this.foodY == this.playerLoc[i, 1]) this.newFood()
+            if (this.foodX == this.path[i, 0] && this.foodY == this.path[i, 1]) this.newFood()
         }
         this.food = game.createSprite(this.foodX, this.foodY)
     }
@@ -40,6 +40,14 @@ class snake {
         }
         return false
     }
+    collision(): boolean {
+        for (let i: number = this.tailLength; i >= 2; i--) {
+            if (this.tail[0].get(LedSpriteProperty.X) == this.tail[i].get(LedSpriteProperty.X) &&
+                this.tail[0].get(LedSpriteProperty.Y) == this.tail[i].get(LedSpriteProperty.Y))
+                return true
+        }
+        return false
+    }
     slither() {
         //Checks for edge of screen
         if (this.edge()) {
@@ -49,19 +57,25 @@ class snake {
             basic.pause(difficulty)
         }
         //updates coordinates of player in array
-        this.playerLoc[0, 0] = this.tail[0].get(LedSpriteProperty.X)
-        this.playerLoc[0, 1] = this.tail[0].get(LedSpriteProperty.Y)
-        for (let i: number = 1; i <= this.tailLength; i++) {
-            //this.playerLoc[i, 0] = this.playerLoc[i - 1, 0]
-            //this.playerLoc[i, 1] = this.playerLoc[i - 1, 1]
-            this.tail[i].goTo(this.playerLoc[i-1, 0], this.playerLoc[i-1, 1])
+        //this.path[0, 0] = 
+        //this.path[0, 1] = 
+        for (let i: number = this.tailLength; i >= 1; i--) {
+            this.path[i, 0] = this.tail[i - 1].get(LedSpriteProperty.X)
+            this.path[i, 1] = this.tail[i - 1].get(LedSpriteProperty.Y)
+            this.tail[i].goTo(this.path[i, 0], this.path[i, 1])
         }
-        if (this.playerLoc[0, 0] == this.foodX && this.playerLoc[0, 1] == this.foodY) {
+
+        if (this.collision()) {
+            game.gameOver()
+        }
+
+        if (this.path[0, 0] == this.foodX && this.path[0, 1] == this.foodY) {
             this.tailLength++
-            this.playerLoc[this.tailLength, 0] = this.playerLoc[this.tailLength - 1, 0]
-            this.playerLoc[this.tailLength, 1] = this.playerLoc[this.tailLength - 1, 1]
-            this.tail[this.tailLength] = game.createSprite(this.playerLoc[this.tailLength, 0], this.playerLoc[this.tailLength, 1])
+            this.path[this.tailLength, 0] = this.path[this.tailLength - 1, 0]
+            this.path[this.tailLength, 1] = this.path[this.tailLength - 1, 1]
+            this.tail[this.tailLength] = game.createSprite(this.path[this.tailLength, 0], this.path[this.tailLength, 1])
             this.food.delete()
+            game.addScore(1)
             this.newFood()
         }
     }
