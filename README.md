@@ -1,1 +1,1 @@
-Only the movement and creation of new food are working
+Everything seems to be working as intended.
